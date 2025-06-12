@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="player"></div>
+    <script language="javascript">
+      /**
+       *  Welcome to VIOOH basic emulator. You can test your DCO's
+       *  interactions with the player here. DCO is loading in an
+       *  iframe, which then communicates with the parent window (player).
+       *
+       *  IMPORTANT NOTICE: there is no guarantee that the code
+       *  you write for your DCO with play on a real player 100%
+       *  correctly. Your DCO needs to be tested properly on a
+       *  real player to verify its validity!
+       *
+       *  Change below variables according to your needs.
+       */
+      const durationOfPlay = 2000;
+      const version = "some player version";
+      const assetId = "1234932287";
+      const market = "some market";
+      const routeFramecode = "some route frame code";
+      const width = 1080;
+      const height = 1920;
+
+      const render = function () {
+        const player = document.getElementById("player");
+        const dco = document.createElement("iframe");
+
+        player.style.cssText = `width:${width}px;height:${height}px;background:black;`;
+        dco.style.cssText = `display:none;width:${width}px;height:${height}px;`;
+        dco.id = "dco";
+        dco.src = `index.html?viooh_player=rtb&viooh_version=${version}&viooh_asset_id=${assetId}&viooh_market=${market}&viooh_audience_id=${routeFramecode}`;
+
+        player.append(dco);
+      };
+
+      let isReadyToPlay;
+
+      window.addEventListener("message", function (event) {
+        // we listen for the viooh.ready event coming from DCO
+        // when DCO has performed all data fetching or other operations
+        // and it is now ready to play
+        // (and potentially listening for the viooh.play message)
+        isReadyToPlay = event.data.event === "viooh.ready" ? true : false;
+      });
+
+      setTimeout(function () {
+        if (isReadyToPlay) {
+          // successful play: player has received viooh.ready and now
+          // player is showing the DCO on screen while sending the
+          // viooh.play event to the DCO (this might be handy when DCO is performing
+          // some action or an animation and so on)
+          const dco = document.getElementById("dco");
+
+          dco.style.display = "block";
+          dco.contentWindow.postMessage({ event: "viooh.play" }, "*");
+        } else {
+          // player did not receive the viooh.ready message from DCO
+          // usually we play alternatives or hard-coded fallback image
+          // and if all goes wrong: black screen
+          document.write(
+            "Sorry, something went wrong! We are currently playing one of VIOOH player's fallback. Or, ultimately black screen!"
+          );
+        }
+      }, durationOfPlay);
+
+      render();
+    </script>
+  </body>
+</html>
